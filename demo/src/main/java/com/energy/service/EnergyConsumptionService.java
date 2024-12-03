@@ -14,4 +14,10 @@ public interface EnergyConsumptionService {
     List<EnergyConsumption> getDailyUsage(Long userId, LocalDate date);
 
     List<EnergyConsumption> getUsersByWeek(Long userId, int year, int weekNumber);
+
+    EnergyConsumption createEnergyConsumption(Long userId, EnergyConsumption energyConsumption);
+
+    EnergyConsumption updateEnergyConsumption(Long energyConsumptionId, EnergyConsumption updatedEnergyConsumption);
+
+    void deleteEnergyConsumption(Long energyConsumptionId);
 }

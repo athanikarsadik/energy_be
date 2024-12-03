@@ -1,8 +1,12 @@
 
 package com.energy.service;
 
+import com.energy.exception.EnergyConsumptionNotFoundException;
+import com.energy.exception.UserNotFoundException;
 import com.energy.model.EnergyConsumption;
+import com.energy.model.User;
 import com.energy.repository.EnergyConsumptionRepository;
+import com.energy.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private EnergyConsumptionRepository energyConsumptionRepository;
@@ -65,6 +72,43 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                 startOfDay, endOfDay);
 
         return consumptions != null ? consumptions : Collections.emptyList();
+
+    }
+
+    @Override
+    public EnergyConsumption createEnergyConsumption(Long userId, EnergyConsumption energyConsumption) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        energyConsumption.setUser(user);
+        return energyConsumptionRepository.save(energyConsumption);
+
+    }
+
+    @Override
+    public EnergyConsumption updateEnergyConsumption(Long energyConsumptionId,
+            EnergyConsumption updatedEnergyConsumption) {
+        EnergyConsumption existingConsumption = energyConsumptionRepository.findById(energyConsumptionId)
+                .orElseThrow(() -> new EnergyConsumptionNotFoundException(
+                        "Energy Consumption not found with ID: " + energyConsumptionId));
+
+        existingConsumption.setEnergyConsumption(updatedEnergyConsumption.getEnergyConsumption());
+        existingConsumption.setEnergyGeneration(updatedEnergyConsumption.getEnergyGeneration());
+        existingConsumption.setMin(updatedEnergyConsumption.getMin());
+        existingConsumption.setMax(updatedEnergyConsumption.getMax());
+        existingConsumption.setTimestamp(updatedEnergyConsumption.getTimestamp());
+
+        return energyConsumptionRepository.save(existingConsumption);
+    }
+
+    @Override
+    public void deleteEnergyConsumption(Long energyConsumptionId) {
+        if (!energyConsumptionRepository.existsById(energyConsumptionId)) {
+            throw new EnergyConsumptionNotFoundException(
+                    "Energy Consumption not found with ID: " + energyConsumptionId);
+        }
+
+        energyConsumptionRepository.deleteById(energyConsumptionId);
 
     }
 
